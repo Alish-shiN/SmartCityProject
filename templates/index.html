@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astana Map with Moving Buses</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Прогноз времени прибытия транспорта в Астане</h1>
+    </header>
+
+    <div class="container">
+        <div id="map"></div>
+        <div class="form-container">
+            <h3>Заполните данные для прогноза</h3>
+            <form id="prediction-form">
+                <label>Автобус:</label>
+                <input type="number" name="deviceid" required><br>
+                <label>Направление:</label>
+                <input type="number" name="direction" required><br>
+                <label>Остановка:</label>
+                <input type="number" name="segment" required><br>
+                <label>Расстояние:</label>
+                <input type="number" name="length" required><br>
+                <button type="button" onclick="makePrediction()">Сделать прогноз</button>
+            </form>
+            <div id="prediction-result"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Городская транспортная система Астаны</p>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script>
+        function makePrediction() {
+            const form = document.getElementById('prediction-form');
+            const formData = new FormData(form);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('prediction-result');
+                if (data.error) {
+                    resultDiv.innerHTML = `<p style="color:red;">Ошибка: ${data.error}</p>`;
+                } else {
+                    resultDiv.innerHTML = `<p>Прогнозируемое время прибытия: ${data.prediction}</p>`;
+                }
+            })
+            .catch(error => console.error('Ошибка:', error));
+        }
+    </script>
+</body>
+</html>
